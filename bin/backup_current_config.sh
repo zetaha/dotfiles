@@ -2,4 +2,4 @@
 
 # backup nvim
 #
-cp -R ~/.config/nvim/ nvim/
+cp -R ~/.config/nvim/ ../nvim/
