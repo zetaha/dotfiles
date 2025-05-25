@@ -580,7 +580,7 @@ return {
           "ktlint",
           "eslint_d",
           "google-java-format",
-          "htmlbeautifier",
+          --[[ "htmlbeautifier", ]]
           "beautysh",
           "buf",
           "rustfmt",
