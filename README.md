@@ -29,7 +29,7 @@ system/
 ## Usage (fresh machine)
 
 ```bash
-git clone <this-repo-url> ~/dotfiles
+git clone git@github.com:zetaha/dotfiles.git ~/dotfiles
 cd ~/dotfiles
 ./install.sh
 ```
