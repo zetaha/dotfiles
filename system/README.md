@@ -7,6 +7,10 @@ the bits below by hand on a fresh install.
 
 ## NVIDIA + Wayland
 
+> **Shortcut:** running `./install.sh --nvidia` performs steps 1 and 2 below
+> automatically (idempotent, with backups) and rebuilds the initramfs + GRUB
+> config. The notes here document what it does / how to do it by hand.
+
 Packages (already in `packages/pacman.txt`): `nvidia-open`, `nvidia-open-lts`,
 `nvidia-utils`, `lib32-nvidia-utils`, `nvidia-settings`, plus the `vulkan` /
 `lib32` libs.

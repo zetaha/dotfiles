@@ -16,6 +16,33 @@ warn() { printf '\033[1;33m!!\033[0m %s\n' "$*"; }
 die()  { printf '\033[1;31mxx\033[0m %s\n' "$*" >&2; exit 1; }
 
 # ---------------------------------------------------------------------------
+# Argument parsing
+# ---------------------------------------------------------------------------
+SETUP_NVIDIA=0
+usage() {
+  cat <<EOF
+Usage: ./install.sh [options]
+
+Options:
+  --nvidia    Also configure NVIDIA drivers for boot/Wayland startup: ensure the
+              nvidia modules are early-loaded in the initramfs, enable DRM
+              modeset on the kernel cmdline, rebuild the initramfs and GRUB
+              config, and enable the NVIDIA suspend/resume services. Edits
+              /etc/mkinitcpio.conf and /etc/default/grub (timestamped backups
+              are made first). Requires GRUB.
+  -h, --help  Show this help and exit.
+EOF
+}
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --nvidia)  SETUP_NVIDIA=1 ;;
+    -h|--help) usage; exit 0 ;;
+    *)         die "Unknown option: $1 (see --help)" ;;
+  esac
+  shift
+done
+
+# ---------------------------------------------------------------------------
 # 0. Sanity checks
 # ---------------------------------------------------------------------------
 [ -f /etc/arch-release ] || die "This script targets Arch Linux."
@@ -121,6 +148,71 @@ enable_system tailscaled.service
 enable_system docker.service
 
 # ---------------------------------------------------------------------------
+# 6b. NVIDIA driver setup (opt-in via --nvidia)
+# ---------------------------------------------------------------------------
+setup_nvidia() {
+  log "Configuring NVIDIA for boot / Wayland startup..."
+  local ts mkconf=/etc/mkinitcpio.conf grubdef=/etc/default/grub
+  local nv_modules="nvidia nvidia_modeset nvidia_uvm nvidia_drm"
+  local regen_grub=0
+  ts="$(date +%Y%m%d-%H%M%S)"
+
+  # Ensure the driver userspace is present (normally already from pacman.txt).
+  sudo pacman -S --needed --noconfirm nvidia-utils || warn "nvidia-utils install skipped"
+
+  # 1. Early-load the nvidia modules in the initramfs.
+  if [ -f "$mkconf" ] && grep -qE '^MODULES=.*nvidia_drm' "$mkconf"; then
+    log "mkinitcpio MODULES already include nvidia."
+  elif [ -f "$mkconf" ]; then
+    sudo cp "$mkconf" "$mkconf.bak.$ts"
+    sudo sed -i -E "s/^MODULES=\((.*)\)/MODULES=(\1 $nv_modules)/" "$mkconf"
+    # tidy any leading/double spaces the substitution may introduce
+    sudo sed -i -E 's/^MODULES=\( +/MODULES=(/; s/  +/ /g' "$mkconf"
+    log "added nvidia modules to $mkconf (backup: $mkconf.bak.$ts)"
+  else
+    warn "$mkconf not found — skipping initramfs module setup"
+  fi
+
+  # 2. Enable DRM modeset on the kernel cmdline (canonical Wayland requirement).
+  if [ -f "$grubdef" ] && grep -qE '^GRUB_CMDLINE_LINUX_DEFAULT=.*nvidia_drm\.modeset=1' "$grubdef"; then
+    log "GRUB cmdline already enables nvidia_drm.modeset."
+  elif [ -f "$grubdef" ]; then
+    sudo cp "$grubdef" "$grubdef.bak.$ts"
+    sudo sed -i -E 's/^(GRUB_CMDLINE_LINUX_DEFAULT=")(.*)"/\1\2 nvidia_drm.modeset=1"/' "$grubdef"
+    sudo sed -i -E 's/^(GRUB_CMDLINE_LINUX_DEFAULT=") +/\1/' "$grubdef"
+    regen_grub=1
+    log "added nvidia_drm.modeset=1 to $grubdef (backup: $grubdef.bak.$ts)"
+  else
+    warn "$grubdef not found — is this a GRUB system? Skipping cmdline edit."
+  fi
+
+  # 3. Rebuild the initramfs so the module changes take effect.
+  log "Rebuilding initramfs (mkinitcpio -P)..."
+  sudo mkinitcpio -P || warn "mkinitcpio failed — check output above"
+
+  # 4. Regenerate GRUB config if the cmdline changed.
+  if [ "$regen_grub" -eq 1 ]; then
+    if [ -f /boot/grub/grub.cfg ]; then
+      log "Regenerating GRUB config..."
+      sudo grub-mkconfig -o /boot/grub/grub.cfg || warn "grub-mkconfig failed"
+    else
+      warn "/boot/grub/grub.cfg not found — apply the cmdline change with your bootloader manually."
+    fi
+  fi
+
+  # 5. Enable suspend/resume services to avoid black screens on wake.
+  enable_system nvidia-suspend.service
+  enable_system nvidia-resume.service
+  enable_system nvidia-hibernate.service
+
+  log "NVIDIA setup done — changes take effect after a reboot."
+}
+
+if [ "$SETUP_NVIDIA" -eq 1 ]; then
+  setup_nvidia
+fi
+
+# ---------------------------------------------------------------------------
 # 7. Done
 # ---------------------------------------------------------------------------
 cat <<EOF
@@ -130,7 +222,9 @@ $(log "Bootstrap complete.")
 Backups of any replaced files: $BACKUP_DIR
 Next steps (manual — see system/README.md):
   * Reboot to start the display manager (sddm) and load NVIDIA drivers.
-  * Review system/README.md for NVIDIA / Wayland / mkinitcpio notes (NOT applied automatically).
+$( [ "$SETUP_NVIDIA" -eq 1 ] \
+    && echo "  * NVIDIA boot setup was applied (--nvidia); the reboot activates it." \
+    || echo "  * NVIDIA boot setup was NOT applied. Re-run with --nvidia, or see system/README.md." )
   * Re-add your secrets: SSH keys, GPG keys, ~/.aws, 1Password, API tokens.
   * Drop a wallpaper at ~/Pictures/wallpapers/jinx.jpg (referenced by hyprland.conf).
   * Sign into apps (1Password, Chrome, Discord, Steam, etc.).

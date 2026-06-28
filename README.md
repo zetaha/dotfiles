@@ -31,8 +31,18 @@ system/
 ```bash
 git clone git@github.com:zetaha/dotfiles.git ~/dotfiles
 cd ~/dotfiles
-./install.sh
+./install.sh            # or: ./install.sh --nvidia
 ```
+
+### Options
+
+- `--nvidia` — also configure NVIDIA for boot/Wayland startup: early-load the
+  nvidia modules in the initramfs, enable `nvidia_drm.modeset=1` on the kernel
+  cmdline, rebuild the initramfs + GRUB config, and enable the suspend/resume
+  services. Edits `/etc/mkinitcpio.conf` and `/etc/default/grub` (timestamped
+  backups first), idempotent, GRUB-only. Without this flag the NVIDIA *packages*
+  still install, but the boot-time driver setup is left to you (see
+  `system/README.md`). Run `./install.sh --help` for details.
 
 The script will:
 1. `pacman -Syu` and install `base-devel git`.
