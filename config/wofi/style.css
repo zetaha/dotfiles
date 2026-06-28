@@ -1,0 +1,84 @@
+/* Catppuccin Mocha for wofi */
+
+* {
+  font-family: "JetBrainsMono Nerd Font", "JetBrains Mono", monospace;
+  font-size: 14px;
+}
+
+window {
+  margin: 0px;
+  border: 2px solid #cba6f7;       /* mauve */
+  border-radius: 12px;
+  background-color: #1e1e2e;       /* base */
+}
+
+#input {
+  margin: 8px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 8px;
+  color: #cdd6f4;                  /* text */
+  background-color: #313244;       /* surface0 */
+  outline: none;
+}
+
+#input image {
+  color: #f5c2e7;                  /* pink */
+}
+
+#input:focus {
+  outline: none;
+  box-shadow: none;
+  border: 1px solid #cba6f7;       /* mauve */
+}
+
+#inner-box {
+  margin: 4px 8px 8px 8px;
+  padding: 4px;
+  border: none;
+  border-radius: 8px;
+  background-color: #1e1e2e;       /* base */
+}
+
+#outer-box {
+  margin: 0px;
+  padding: 4px;
+  border: none;
+  background-color: #1e1e2e;       /* base */
+}
+
+#scroll {
+  margin: 0px;
+  padding: 0px;
+  border: none;
+}
+
+#text {
+  margin: 4px 8px;
+  padding: 0px;
+  color: #cdd6f4;                  /* text */
+}
+
+#entry {
+  padding: 6px 8px;
+  border: none;
+  border-radius: 8px;
+  background-color: transparent;
+}
+
+#entry image {
+  -gtk-icon-transform: scale(0.9);
+  margin-right: 6px;
+}
+
+#entry:selected {
+  background-color: #45475a;       /* surface1 */
+}
+
+#entry:selected #text {
+  color: #f5c2e7;                  /* pink */
+}
+
+#entry:drop(active) {
+  background-color: #585b70;       /* surface2 */
+}

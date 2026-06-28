@@ -1,0 +1,17 @@
+# Defensive: never commit secrets even if accidentally copied into the tree.
+**/.ssh/
+**/.gnupg/
+**/.aws/
+**/.1password/
+**/1Password/
+**/.claude.json
+**/.docker/config.json
+**/.ollama/
+**/*_history
+**/*.key
+**/*.pem
+**/id_rsa*
+**/id_ed25519*
+**/*token*
+**/*secret*
+**/.dotfiles-backup/

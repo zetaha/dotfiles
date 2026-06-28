@@ -1,0 +1,12 @@
+1password
+aseprite
+docker-desktop
+dualsensectl
+game-devices-udev
+google-chrome
+mongodb-compass-bin
+nodejs-vite
+proton-ge-custom-bin
+protonup-qt
+sunshine-bin
+ttf-ms-fonts
