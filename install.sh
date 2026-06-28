@@ -128,6 +128,15 @@ done
 shopt -u dotglob nullglob
 
 # ---------------------------------------------------------------------------
+# 5b. Wallpapers (copied, not symlinked — referenced by hyprland.conf)
+# ---------------------------------------------------------------------------
+if [ -d "$DOTFILES/assets/wallpapers" ]; then
+  log "Installing wallpapers to ~/Pictures/wallpapers..."
+  mkdir -p "$HOME/Pictures/wallpapers"
+  cp -n "$DOTFILES"/assets/wallpapers/* "$HOME/Pictures/wallpapers/" 2>/dev/null || true
+fi
+
+# ---------------------------------------------------------------------------
 # 6. Enable services (only those whose unit exists)
 # ---------------------------------------------------------------------------
 enable_system() {
@@ -226,6 +235,7 @@ $( [ "$SETUP_NVIDIA" -eq 1 ] \
     && echo "  * NVIDIA boot setup was applied (--nvidia); the reboot activates it." \
     || echo "  * NVIDIA boot setup was NOT applied. Re-run with --nvidia, or see system/README.md." )
   * Re-add your secrets: SSH keys, GPG keys, ~/.aws, 1Password, API tokens.
-  * Drop a wallpaper at ~/Pictures/wallpapers/jinx.jpg (referenced by hyprland.conf).
+  * Install tools that live outside pacman/AUR if you want them: Claude Code
+    (claude.ai/install.sh), zen browser, uv, aws-sam; re-pull Ollama models.
   * Sign into apps (1Password, Chrome, Discord, Steam, etc.).
 EOF

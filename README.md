@@ -22,6 +22,8 @@ config/               Symlinked into ~/.config/
   nvim/               Neovim config
 home/
   .zshrc              Shell config (oh-my-zsh, installed fresh by the script)
+assets/
+  wallpapers/         Wallpapers, copied to ~/Pictures/wallpapers (used by hyprpaper)
 system/
   README.md           Manual, machine-specific steps (NVIDIA, mkinitcpio, GRUB)
 ```
