@@ -15,3 +15,10 @@
 **/*token*
 **/*secret*
 **/.dotfiles-backup/
+
+# Sunshine: config is tracked, but runtime state holds a password hash,
+# client pairing certs and the CA private key. Never commit these.
+config/sunshine/credentials/
+config/sunshine/sunshine_state.json
+config/sunshine/sunshine.log
+config/sunshine/*.pem

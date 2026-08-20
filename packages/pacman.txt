@@ -34,7 +34,9 @@ linux-headers
 linux-lts
 linux-lts-headers
 lutris
+man-db
 mangohud
+mdadm
 moonlight-qt
 nano
 neovim
@@ -63,6 +65,7 @@ polkit-kde-agent
 python-pip
 qt5-wayland
 qt6-wayland
+rsync
 sddm
 slurp
 solaar

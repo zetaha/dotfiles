@@ -115,8 +115,19 @@ link() {
 log "Linking ~/.config entries..."
 mkdir -p "$HOME/.config"
 for src in "$DOTFILES"/config/*; do
-  link "$src" "$HOME/.config/$(basename "$src")"
+  base="$(basename "$src")"
+  # systemd is handled separately: ~/.config/systemd/user is managed by systemctl
+  # (it writes .wants/ symlinks there), so it must stay a real directory.
+  [ "$base" = "systemd" ] && continue
+  link "$src" "$HOME/.config/$base"
 done
+
+# systemd user units: copy into place rather than symlinking the directory.
+if [ -d "$DOTFILES/config/systemd/user" ]; then
+  log "Installing systemd user units..."
+  mkdir -p "$HOME/.config/systemd/user"
+  cp "$DOTFILES"/config/systemd/user/*.service "$HOME/.config/systemd/user/"
+fi
 
 log "Linking home dotfiles..."
 shopt -s dotglob nullglob
@@ -155,6 +166,22 @@ enable_system sddm.service
 enable_system cups.socket
 enable_system tailscaled.service
 enable_system docker.service
+enable_system sshd.service
+
+enable_user() {
+  if systemctl --user list-unit-files "$1" >/dev/null 2>&1 && \
+     [ -n "$(systemctl --user list-unit-files "$1" 2>/dev/null | grep "$1")" ]; then
+    log "enabling (user) $1"
+    systemctl --user enable "$1" || warn "could not enable $1"
+  else
+    warn "user unit $1 not found — skipping"
+  fi
+}
+
+log "Enabling user services..."
+enable_user tailscale-systray.service
+enable_user app-dev.lizardbyte.app.Sunshine.service
+enable_user docker-desktop.service
 
 # ---------------------------------------------------------------------------
 # 6b. NVIDIA driver setup (opt-in via --nvidia)
